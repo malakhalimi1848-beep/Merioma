@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>حافظ | حوّل دروسك إلى لعبة</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;700;800;900&family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#D4A544;
+  --gold-light:#F0D48A;
+  --emerald:#0E7C66;
+  --emerald-light:#14A085;
+  --coral:#E85D4E;
+  --ink:#152238;
+  --paper:#FBF7EE;
+  --paper-2:#F2ECDD;
+  --card:#FFFFFF;
+  --line:#E7DFC9;
+  --text:#241B10;
+  --text-soft:#6B6151;
+  --radius:20px;
+  --shadow:0 8px 24px rgba(36,27,16,.08);
+}
+[data-theme="dark"]{
+  --ink:#EDE6D6;
+  --paper:#0E1420;
+  --paper-2:#141B2B;
+  --card:#182135;
+  --line:#26304A;
+  --text:#EDE6D6;
+  --text-soft:#8D97B3;
+  --shadow:0 8px 28px rgba(0,0,0,.4);
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{
+  font-family:'Tajawal', sans-serif;
+  background:var(--paper);
+  color:var(--text);
+  min-height:100vh;
+  transition:background .3s, color .3s;
+  padding-bottom:84px;
+}
+h1,h2,h3,.display{font-family:'Cairo', sans-serif;}
+.screen{display:none; max-width:520px; margin:0 auto; padding:20px 18px 20px;}
+.screen.active{display:block; animation:fadeIn .35s ease;}
+@keyframes fadeIn{from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);}}
+
+/* ===== Top bar ===== */
+.topbar{
+  max-width:520px; margin:0 auto; padding:16px 18px 4px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.brand{display:flex; align-items:center; gap:8px; font-family:'Cairo'; font-weight:900; font-size:1.3rem; color:var(--emerald);}
+[data-theme="dark"] .brand{color:var(--gold-light);}
+.brand .mark{width:32px; height:32px; border-radius:10px; background:linear-gradient(135deg,var(--gold),var(--emerald)); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:900;}
+.icon-btn{width:38px; height:38px; border-radius:50%; border:1px solid var(--line); background:var(--card); display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:1.1rem;}
+
+/* ===== Buttons ===== */
+.btn{
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  padding:15px 20px; border-radius:16px; border:none; cursor:pointer;
+  font-family:'Cairo'; font-weight:800; font-size:1rem;
+  transition:transform .12s ease, box-shadow .12s ease; width:100%;
+}
+.btn:active{transform:scale(.97);}
+.btn-primary{background:linear-gradient(135deg,var(--emerald-light),var(--emerald)); color:#fff; box-shadow:0 6px 18px rgba(14,124,102,.35);}
+.btn-gold{background:linear-gradient(135deg,var(--gold-light),var(--gold)); color:#3A2B04; box-shadow:0 6px 18px rgba(212,165,68,.35);}
+.btn-outline{background:transparent; border:2px solid var(--line); color:var(--text);}
+.btn-soft{background:var(--paper-2); color:var(--text);}
+.btn-sm{padding:10px 16px; font-size:.9rem; width:auto;}
+.btn:disabled{opacity:.5; cursor:not-allowed;}
+
+/* ===== Cards ===== */
+.card{background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow); padding:18px; border:1px solid var(--line);}
+.card + .card{margin-top:14px;}
+
+/* ===== Home ===== */
+.hero{text-align:center; padding:14px 4px 22px;}
+.hero h1{font-size:1.7rem; font-weight:900; line-height:1.4; margin-bottom:8px;}
+.hero .accent{color:var(--emerald);}
+[data-theme="dark"] .hero .accent{color:var(--gold-light);}
+.hero p{color:var(--text-soft); font-size:.95rem; line-height:1.7; margin-bottom:20px;}
+.upload-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;}
+.upload-tile{
+  background:var(--card); border:1.5px dashed var(--line); border-radius:16px;
+  padding:16px 10px; text-align:center; cursor:pointer; transition:.15s;
+}
+.upload-tile:active{transform:scale(.96); border-color:var(--gold);}
+.upload-tile .em{font-size:1.6rem; display:block; margin-bottom:6px;}
+.upload-tile span.lbl{font-weight:700; font-size:.85rem;}
+
+.section-title{display:flex; align-items:center; justify-content:space-between; margin:24px 0 12px;}
+.section-title h2{font-size:1.05rem; font-weight:800;}
+.section-title .more{font-size:.8rem; color:var(--text-soft);}
+
+.stats-row{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:6px;}
+.stat-pill{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:10px 4px; text-align:center;}
+.stat-pill .n{font-family:'Cairo'; font-weight:900; font-size:1.15rem; color:var(--emerald);}
+[data-theme="dark"] .stat-pill .n{color:var(--gold-light);}
+.stat-pill .l{font-size:.68rem; color:var(--text-soft); margin-top:2px;}
+
+.lesson-card{display:flex; align-items:center; gap:12px; padding:14px;}
+.lesson-card .badge{width:46px; height:46px; border-radius:14px; background:var(--paper-2); display:flex; align-items:center; justify-content:center; font-size:1.3rem; flex-shrink:0;}
+.lesson-card .info{flex:1; min-width:0;}
+.lesson-card .info h3{font-size:.95rem; font-weight:800; margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.progress-track{height:7px; background:var(--paper-2); border-radius:6px; overflow:hidden; margin-top:6px;}
+.progress-fill{height:100%; background:linear-gradient(90deg,var(--emerald-light),var(--gold)); border-radius:6px; transition:width .4s ease;}
+.lesson-card .meta{font-size:.72rem; color:var(--text-soft); margin-top:4px;}
+
+.empty{text-align:center; padding:26px 10px; color:var(--text-soft);}
+.empty .em{font-size:2rem; display:block; margin-bottom:8px;}
+
+/* ===== Upload screen ===== */
+textarea{
+  width:100%; min-height:160px; border-radius:16px; border:1.5px solid var(--line);
+  background:var(--card); color:var(--text); padding:14px; font-family:'Tajawal'; font-size:.95rem;
+  resize:vertical; line-height:1.8;
+}
+textarea:focus{outline:none; border-color:var(--emerald);}
+.tabs{display:flex; gap:8px; margin-bottom:14px; background:var(--paper-2); padding:5px; border-radius:14px;}
+.tab{flex:1; text-align:center; padding:10px; border-radius:10px; font-weight:700; font-size:.85rem; cursor:pointer; color:var(--text-soft);}
+.tab.active{background:var(--card); color:var(--emerald); box-shadow:0 2px 6px rgba(0,0,0,.06);}
+[data-theme="dark"] .tab.active{color:var(--gold-light);}
+.hint{font-size:.78rem; color:var(--text-soft); margin-top:8px; text-align:center;}
+.filebox{border:1.5px dashed var(--line); border-radius:16px; padding:30px 14px; text-align:center; cursor:pointer;}
+.filebox .fname{font-weight:700; margin-top:8px; color:var(--emerald); font-size:.85rem;}
+
+/* ===== Loading ===== */
+.loading-wrap{display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:70vh; text-align:center; padding:20px;}
+.spinner{width:60px; height:60px; border-radius:50%; border:5px solid var(--paper-2); border-top-color:var(--gold); animation:spin 1s linear infinite; margin-bottom:24px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-msg{font-family:'Cairo'; font-weight:800; font-size:1.05rem; min-height:28px;}
+
+/* ===== Result screen ===== */
+.result-icon{width:78px; height:78px; border-radius:50%; background:linear-gradient(135deg,var(--gold-light),var(--gold)); display:flex; align-items:center; justify-content:center; font-size:2rem; margin:0 auto 16px;}
+.result-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:18px 0;}
+.result-stat{background:var(--paper-2); border-radius:14px; padding:14px; text-align:center;}
+.result-stat .n{font-family:'Cairo'; font-weight:900; font-size:1.4rem; color:var(--emerald);}
+[data-theme="dark"] .result-stat .n{color:var(--gold-light);}
+.result-stat .l{font-size:.75rem; color:var(--text-soft); margin-top:2px;}
+
+/* ===== Path (lesson map) ===== */
+.path-wrap{position:relative; padding:20px 0 40px;}
+.path-node{
+  width:74px; height:74px; border-radius:50%; margin:0 auto 34px; position:relative;
+  display:flex; align-items:center; justify-content:center; font-size:1.6rem; cursor:pointer;
+  border:4px solid var(--paper); box-shadow:0 6px 14px rgba(0,0,0,.12); transition:transform .15s;
+}
+.path-node:active{transform:scale(.95);}
+.path-node.locked{background:var(--paper-2); color:var(--text-soft); cursor:default; opacity:.6;}
+.path-node.available{background:linear-gradient(135deg,var(--gold-light),var(--gold)); color:#3A2B04; animation:pulse 2.2s infinite;}
+.path-node.mastered{background:linear-gradient(135deg,var(--emerald-light),var(--emerald)); color:#fff;}
+@keyframes pulse{0%,100%{box-shadow:0 6px 14px rgba(212,165,68,.3);} 50%{box-shadow:0 6px 22px rgba(212,165,68,.65);}}
+.path-node::after{content:attr(data-i); position:absolute; bottom:-24px; font-size:.7rem; font-family:'Cairo'; font-weight:700; color:var(--text-soft);}
+.bead-line{position:absolute; top:0; bottom:0; right:50%; width:3px; background:var(--line); z-index:-1;}
+.path-node:nth-child(even){margin-inline-end:70px;}
+.path-node:nth-child(odd){margin-inline-start:70px;}
+
+/* ===== Quiz screen ===== */
+.quiz-top{display:flex; align-items:center; gap:12px; margin-bottom:18px;}
+.hearts{display:flex; gap:3px; font-size:1.1rem;}
+.quiz-progress{flex:1;}
+.xp-badge{display:flex; align-items:center; gap:4px; font-family:'Cairo'; font-weight:800; font-size:.85rem; color:var(--gold); background:var(--paper-2); padding:6px 10px; border-radius:10px;}
+.q-card{background:var(--card); border-radius:22px; box-shadow:var(--shadow); padding:24px 20px; border:1px solid var(--line); min-height:200px;}
+.q-type{font-size:.72rem; font-weight:800; color:var(--text-soft); background:var(--paper-2); display:inline-block; padding:4px 10px; border-radius:8px; margin-bottom:12px;}
+.q-text{font-family:'Cairo'; font-weight:800; font-size:1.15rem; line-height:1.8; margin-bottom:20px;}
+.opt-list{display:flex; flex-direction:column; gap:10px;}
+.opt{
+  padding:14px 16px; border-radius:14px; border:2px solid var(--line); background:var(--card);
+  cursor:pointer; font-size:.95rem; font-weight:700; text-align:right; transition:.15s;
+}
+.opt:active{transform:scale(.98);}
+.opt.correct{border-color:var(--emerald); background:rgba(14,124,102,.12); color:var(--emerald);}
+.opt.wrong{border-color:var(--coral); background:rgba(232,93,78,.12); color:var(--coral);}
+.opt.disabled{pointer-events:none;}
+.fill-input{width:100%; padding:14px 16px; border-radius:14px; border:2px solid var(--line); background:var(--card); color:var(--text); font-size:1rem; font-family:'Tajawal'; text-align:center;}
+.tf-row{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+.tf-btn{padding:20px; border-radius:14px; border:2px solid var(--line); background:var(--card); font-family:'Cairo'; font-weight:800; font-size:1rem; cursor:pointer;}
+.flip-card{perspective:1000px; height:180px; cursor:pointer;}
+.flip-inner{position:relative; width:100%; height:100%; transition:transform .5s; transform-style:preserve-3d;}
+.flip-card.flipped .flip-inner{transform:rotateY(180deg);}
+.flip-face{position:absolute; inset:0; backface-visibility:hidden; border-radius:16px; display:flex; align-items:center; justify-content:center; text-align:center; padding:18px; font-family:'Cairo'; font-weight:700; font-size:1.05rem;}
+.flip-front{background:var(--paper-2);}
+.flip-back{background:linear-gradient(135deg,var(--emerald-light),var(--emerald)); color:#fff; transform:rotateY(180deg);}
+
+.feedback-bar{
+  position:fixed; bottom:0; right:0; left:0; padding:18px; z-index:40;
+  transform:translateY(110%); transition:transform .3s ease;
+}
+.feedback-bar.show{transform:translateY(0);}
+.feedback-bar.correct{background:rgba(14,124,102,.97);}
+.feedback-bar.wrong{background:rgba(232,93,78,.97);}
+.feedback-inner{max-width:520px; margin:0 auto; color:#fff;}
+.feedback-inner h4{font-family:'Cairo'; font-weight:900; font-size:1.05rem; margin-bottom:4px;}
+.feedback-inner p{font-size:.85rem; opacity:.95; line-height:1.6;}
+.feedback-inner .btn{margin-top:12px; background:#fff; color:var(--ink);}
+
+/* ===== Bottom nav ===== */
+.bottomnav{
+  position:fixed; bottom:0; right:0; left:0; background:var(--card); border-top:1px solid var(--line);
+  display:flex; z-index:30; padding:6px 4px calc(6px + env(safe-area-inset-bottom));
+}
+.nav-item{flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; padding:8px 4px; cursor:pointer; color:var(--text-soft); font-size:.68rem; font-weight:700;}
+.nav-item .em{font-size:1.25rem;}
+.nav-item.active{color:var(--emerald);}
+[data-theme="dark"] .nav-item.active{color:var(--gold-light);}
+
+/* Confetti */
+.confetti-piece{position:fixed; top:-10px; width:8px; height:14px; z-index:100; pointer-events:none; animation:fall linear forwards;}
+@keyframes fall{to{transform:translateY(105vh) rotate(540deg); opacity:.3;}}
+
+/* misc */
+.mastery-dot{width:9px; height:9px; border-radius:50%; display:inline-block; margin-inline-start:4px;}
+.mastery-red{background:#E85D4E;} .mastery-orange{background:#E8A33D;} .mastery-green{background:#0E7C66;}
+.review-item{display:flex; align-items:center; justify-content:space-between; padding:13px 4px; border-bottom:1px solid var(--line);}
+.review-item:last-child{border-bottom:none;}
+.review-item .txt{font-size:.87rem; flex:1; padding-inline-end:10px;}
+.small-tag{font-size:.7rem; color:var(--text-soft);}
+.field-label{font-size:.78rem; font-weight:700; color:var(--text-soft); margin-bottom:8px; display:block;}
+.error-box{background:rgba(232,93,78,.1); border:1px solid var(--coral); color:var(--coral); padding:12px 14px; border-radius:12px; font-size:.85rem; margin-top:10px;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand"><span class="mark">ح</span> حافظ</div>
+  <div class="icon-btn" id="themeToggle">🌙</div>
+</div>
+
+<!-- ===================== HOME ===================== -->
+<section class="screen active" id="screen-home">
+  <div class="hero">
+    <h1>حوّل دروسك <span class="accent">إلى لعبة</span></h1>
+    <p>ارفع درسك، وسنحوّله إلى تجربة تفاعلية تساعدك على الفهم والحفظ والمراجعة.</p>
+  </div>
+
+  <div class="upload-grid">
+    <div class="upload-tile" onclick="goUpload('file')"><span class="em">📄</span><span class="lbl">رفع ملف نصي</span></div>
+    <div class="upload-tile" onclick="goUpload('text')"><span class="em">✍️</span><span class="lbl">كتابة نص</span></div>
+  </div>
+  <button class="btn btn-primary" onclick="goUpload('text')">ابدأ التعلم</button>
+
+  <div class="section-title"><h2>إحصائياتك</h2></div>
+  <div class="stats-row">
+    <div class="stat-pill"><div class="n" id="stat-xp">0</div><div class="l">XP</div></div>
+    <div class="stat-pill"><div class="n" id="stat-streak">0</div><div class="l">أيام متتالية</div></div>
+    <div class="stat-pill"><div class="n" id="stat-lessons">0</div><div class="l">دروس مكتملة</div></div>
+    <div class="stat-pill"><div class="n" id="stat-mastery">0%</div><div class="l">نسبة الإتقان</div></div>
+  </div>
+
+  <div class="section-title"><h2>تابع تعلمك</h2></div>
+  <div id="continue-list"></div>
+
+  <div class="section-title"><h2>مراجعة اليوم</h2></div>
+  <div id="home-review-preview"></div>
+</section>
+
+<!-- ===================== UPLOAD ===================== -->
+<section class="screen" id="screen-upload">
+  <h2 style="font-weight:900; margin-bottom:16px;">أضف درسًا جديدًا</h2>
+  <div class="tabs">
+    <div class="tab active" data-tab="text" onclick="switchUploadTab('text')">كتابة نص</div>
+    <div class="tab" data-tab="file" onclick="switchUploadTab('file')">رفع ملف (txt)</div>
+  </div>
+
+  <div id="tab-text">
+    <span class="field-label">اسم الدرس (اختياري)</span>
+    <input type="text" id="lessonNameInput" placeholder="مثال: مكونات الخلية" style="width:100%; padding:13px 14px; border-radius:14px; border:1.5px solid var(--line); background:var(--card); color:var(--text); font-family:'Tajawal'; margin-bottom:14px;">
+    <span class="field-label">الصق أو اكتب محتوى الدرس</span>
+    <textarea id="lessonTextInput" placeholder="الصق نص الدرس هنا... (مثال: الميتوكوندريا مسؤولة عن إنتاج الطاقة في الخلية...)"></textarea>
+  </div>
+
+  <div id="tab-file" style="display:none;">
+    <div class="filebox" onclick="document.getElementById('fileInput').click()">
+      <span class="em" style="font-size:1.8rem;">📎</span>
+      <div style="font-weight:700; margin-top:6px;">اضغط لاختيار ملف نصي (.txt)</div>
+      <div class="fname" id="fileNameDisplay"></div>
+    </div>
+    <input type="file" id="fileInput" accept=".txt" style="display:none;" onchange="handleFileUpload(event)">
+    <div class="hint">دعم PDF والصور (OCR) قادم قريبًا — حاليًا: الصق النص مباشرة أو ارفع ملف txt.</div>
+  </div>
+
+  <div id="uploadError"></div>
+
+  <button class="btn btn-gold" style="margin-top:18px;" onclick="startGeneration()">🚀 حلّل الدرس وابدأ</button>
+  <button class="btn btn-outline" style="margin-top:10px;" onclick="showScreen('home')">إلغاء</button>
+</section>
+
+<!-- ===================== LOADING ===================== -->
+<section class="screen" id="screen-loading">
+  <div class="loading-wrap">
+    <div class="spinner"></div>
+    <div class="loading-msg" id="loadingMsg">نقرأ الدرس...</div>
+  </div>
+</section>
+
+<!-- ===================== RESULT ===================== -->
+<section class="screen" id="screen-result">
+  <div style="text-align:center; padding-top:20px;">
+    <div class="result-icon">🎉</div>
+    <h2 style="font-weight:900; font-size:1.3rem;">تم تجهيز درسَك!</h2>
+    <p style="color:var(--text-soft); margin-top:8px;" id="resultLessonName"></p>
+  </div>
+  <div class="result-grid">
+    <div class="result-stat"><div class="n" id="res-concepts">0</div><div class="l">معلومة رئيسية</div></div>
+    <div class="result-stat"><div class="n" id="res-questions">0</div><div class="l">سؤال تفاعلي</div></div>
+  </div>
+  <button class="btn btn-primary" style="margin-top:10px;" onclick="beginLesson()">ابدأ التعلم</button>
+  <button class="btn btn-outline" style="margin-top:10px;" onclick="showScreen('home')">لاحقًا</button>
+</section>
+
+<!-- ===================== LESSON PATH ===================== -->
+<section class="screen" id="screen-map">
+  <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
+    <div class="icon-btn" onclick="showScreen('home')">→</div>
+    <h2 style="font-weight:900; font-size:1.1rem;" id="mapLessonName">الدرس</h2>
+  </div>
+  <div class="progress-track" style="margin:14px 0 4px;"><div class="progress-fill" id="mapProgressFill" style="width:0%;"></div></div>
+  <div class="meta" style="text-align:center; color:var(--text-soft); font-size:.8rem; margin-bottom:10px;" id="mapProgressText"></div>
+  <div class="path-wrap" id="pathWrap"></div>
+</section>
+
+<!-- ===================== QUIZ ===================== -->
+<section class="screen" id="screen-quiz">
+  <div class="quiz-top">
+    <div class="icon-btn" onclick="exitQuiz()">✕</div>
+    <div class="quiz-progress"><div class="progress-track"><div class="progress-fill" id="quizProgressFill" style="width:0%;"></div></div></div>
+    <div class="hearts" id="heartsDisplay"></div>
+  </div>
+  <div id="quizArea"></div>
+</section>
+
+<!-- ===================== REVIEW ===================== -->
+<section class="screen" id="screen-review">
+  <h2 style="font-weight:900; margin-bottom:4px;">مراجعة اليوم</h2>
+  <p style="color:var(--text-soft); font-size:.85rem; margin-bottom:16px;">المعلومات التي تحتاج إلى مراجعة أو لم تُتقَن بعد.</p>
+  <div id="reviewList"></div>
+  <button class="btn btn-gold" style="margin-top:16px;" id="startReviewBtn" onclick="startReviewSession()">ابدأ جلسة المراجعة</button>
+</section>
+
+<!-- ===================== STATS ===================== -->
+<section class="screen" id="screen-stats">
+  <h2 style="font-weight:900; margin-bottom:16px;">إحصائياتك</h2>
+  <div class="stats-row">
+    <div class="stat-pill"><div class="n" id="s2-xp">0</div><div class="l">XP</div></div>
+    <div class="stat-pill"><div class="n" id="s2-streak">0</div><div class="l">Streak</div></div>
+    <div class="stat-pill"><div class="n" id="s2-correct">0</div><div class="l">إجابات صحيحة</div></div>
+    <div class="stat-pill"><div class="n" id="s2-wrong">0</div><div class="l">إجابات خاطئة</div></div>
+  </div>
+  <div class="card" style="margin-top:16px;">
+    <h3 style="font-size:.95rem; margin-bottom:12px;">الإتقان حسب الدرس</h3>
+    <div id="statsPerLesson"></div>
+  </div>
+  <div class="card">
+    <h3 style="font-size:.95rem; margin-bottom:10px;">المستوى الحالي</h3>
+    <div id="levelDisplay" style="font-family:'Cairo'; font-weight:800; color:var(--emerald);"></div>
+  </div>
+</section>
+
+<div class="bottomnav">
+  <div class="nav-item active" data-nav="home" onclick="showScreen('home')"><span class="em">🏠</span>الرئيسية</div>
+  <div class="nav-item" data-nav="review" onclick="openReview()"><span class="em">🔁</span>مراجعة</div>
+  <div class="nav-item" data-nav="upload" onclick="goUpload('text')"><span class="em">➕</span>درس جديد</div>
+  <div class="nav-item" data-nav="stats" onclick="openStats()"><span class="em">📊</span>إحصائيات</div>
+</div>
+
+<div class="feedback-bar" id="feedbackBar">
+  <div class="feedback-inner">
+    <h4 id="feedbackTitle"></h4>
+    <p id="feedbackExplain"></p>
+    <button class="btn" onclick="nextQuestion()">متابعة</button>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   حافظ — التخزين والحالة
+   ============================================================ */
+const DB_KEY = 'hafez_db_v1';
+let db = loadDB();
+
+function loadDB(){
+  try{
+    const raw = localStorage.getItem(DB_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  return {
+    xp:0, streak:0, lastActiveDate:null,
+    totalCorrect:0, totalWrong:0,
+    lessons: {} // id -> {name, createdAt, concepts:[...], completed:false}
+  };
+}
+function saveDB(){ localStorage.setItem(DB_KEY, JSON.stringify(db)); }
+
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+function bumpStreak(){
+  const t = todayStr();
+  if(db.lastActiveDate === t) return;
+  const y = new Date(Date.now()-86400000).toISOString().slice(0,10);
+  db.streak = (db.lastActiveDate === y) ? db.streak+1 : 1;
+  db.lastActiveDate = t;
+  saveDB();
+}
+
+/* ============================================================
+   التنقل بين الشاشات
+   ============================================================ */
+function showScreen(name){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+name).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const navMap = {home:'home', review:'review', upload:'upload', stats:'stats'};
+  const navEl = document.querySelector(`.nav-item[data-nav="${navMap[name]||''}"]`);
+  if(navEl) navEl.classList.add('active');
+  window.scrollTo(0,0);
+  if(name==='home') renderHome();
+}
+
+function goUpload(mode){
+  showScreen('upload');
+  switchUploadTab(mode==='file'?'file':'text');
+}
+function switchUploadTab(t){
+  document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active', x.dataset.tab===t));
+  document.getElementById('tab-text').style.display = t==='text' ? 'block':'none';
+  document.getElementById('tab-file').style.display = t==='file' ? 'block':'none';
+}
+function handleFileUpload(e){
+  const f = e.target.files[0];
+  if(!f) return;
+  document.getElementById('fileNameDisplay').textContent = f.name;
+  const reader = new FileReader();
+  reader.onload = ev => { window._uploadedFileText = ev.target.result; };
+  reader.readAsText(f, 'UTF-8');
+}
+
+/* ============================================================
+   توليد الدرس عبر الذكاء الاصطناعي
+   ============================================================ */
+const loadingMessages = ["نقرأ الدرس...", "نستخرج المعلومات المهمة...", "نبني الأسئلة...", "نجهز الألعاب...", "ننشئ رحلة التعلم الخاصة بك..."];
+let currentLessonId = null;
+
+async function startGeneration(){
+  const activeTab = document.querySelector('.tab.active').dataset.tab;
+  let text = '';
+  if(activeTab === 'text'){
+    text = document.getElementById('lessonTextInput').value.trim();
+  } else {
+    text = (window._uploadedFileText || '').trim();
+  }
+  const errBox = document.getElementById('uploadError');
+  errBox.innerHTML = '';
+  if(text.length < 20){
+    errBox.innerHTML = '<div class="error-box">أضف نصًا أطول قليلًا حتى نتمكن من بناء درس مفيد (20 حرفًا على الأقل).</div>';
+    return;
+  }
+  if(text.length > 12000) text = text.slice(0,12000);
+
+  let lessonName = document.getElementById('lessonNameInput').value.trim();
+
+  showScreen('loading');
+  let msgIdx = 0;
+  document.getElementById('loadingMsg').textContent = loadingMessages[0];
+  const msgInterval = setInterval(()=>{
+    msgIdx = (msgIdx+1) % loadingMessages.length;
+    document.getElementById('loadingMsg').textContent = loadingMessages[msgIdx];
+  }, 1600);
+
+  try{
+    const lessonData = await generateLessonFromAI(text, lessonName);
+    clearInterval(msgInterval);
+    const id = 'l_' + Date.now();
+    lessonData.concepts.forEach((c,i)=>{ c.id = 'c'+i; c.masteredTypes = []; c.wrongCount = 0; });
+    db.lessons[id] = {
+      id, name: lessonData.lessonTitle || lessonName || 'درس جديد',
+      createdAt: Date.now(), concepts: lessonData.concepts, completedOnce:false
+    };
+    saveDB();
+    currentLessonId = id;
+
+    document.getElementById('resultLessonName').textContent = db.lessons[id].name;
+    document.getElementById('res-concepts').textContent = lessonData.concepts.length;
+    document.getElementById('res-questions').textContent = lessonData.concepts.length * 4;
+    showScreen('result');
+  }catch(err){
+    clearInterval(msgInterval);
+    showScreen('upload');
+    document.getElementById('uploadError').innerHTML =
+      `<div class="error-box">تعذّر تحليل الدرس حاليًا (${escapeHtml(err.message||'خطأ غير متوقع')}). حاول مجددًا.</div>`;
+  }
+}
+
+async function generateLessonFromAI(sourceText, suggestedName){
+  const systemPrompt = `أنت محرك تحويل الدروس إلى ألعاب تعليمية لتطبيق "حافظ". مهمتك تحليل نص الدرس المُعطى وتحويله إلى معلومات (concepts) صغيرة، ولكل معلومة إنشاء 4 أسئلة مختلفة الأنواع تختبر نفس المعلومة بطرق مختلفة. أعد فقط JSON صالح دون أي نص إضافي أو Markdown.
+
+القواعد:
+- استخرج 4 إلى 10 معلومات رئيسية فقط من النص (لا تخترع معلومات غير موجودة في النص).
+- لكل معلومة أنشئ 4 أسئلة بالضبط بهذا الترتيب الثابت للأنواع: "mcq" ثم "fill" ثم "truefalse" ثم "flashcard".
+- نوع mcq: سؤال اختيار من متعدد بأربع خيارات (options: مصفوفة من 4 نصوص) وcorrectIndex (0-3) وexplanation قصير.
+- نوع fill: جملة فيها فراغ "____" مكان الكلمة المهمة، answer هو الكلمة الصحيحة، وexplanation.
+- نوع truefalse: جملة (statement) قد تكون صحيحة أو خاطئة، answer هو true أو false، وexplanation.
+- نوع flashcard: front (سؤال أو مصطلح) وback (الإجابة أو الشرح).
+- اجعل صياغة كل سؤال مختلفة عن الأخرى ولا تكرر نفس الصياغة بين الأسئلة الأربعة لنفس المعلومة.
+- حدد لكل معلومة: difficulty ("سهل"|"متوسط"|"صعب") وimportance ("عالية"|"متوسطة"|"منخفضة").
+- أعد الاستجابة بهذا الشكل بالضبط:
+{"lessonTitle":"...","concepts":[{"concept":"...","fact":"...","difficulty":"متوسط","importance":"عالية","questions":[
+{"type":"mcq","question":"...","options":["...","...","...","..."],"correctIndex":0,"explanation":"..."},
+{"type":"fill","question":"... ____ ...","answer":"...","explanation":"..."},
+{"type":"truefalse","statement":"...","answer":true,"explanation":"..."},
+{"type":"flashcard","front":"...","back":"...","explanation":"..."}
+]}]}`;
+
+  const userPrompt = `عنوان مقترح للدرس: ${suggestedName || '(غير محدد، اقترح عنوانًا مناسبًا)'}\n\nنص الدرس:\n"""${sourceText}"""`;
+
+  const response = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+      model: "claude-sonnet-4-6",
+      max_tokens: 4000,
+      system: systemPrompt,
+      messages: [{role:"user", content:userPrompt}]
+    })
+  });
+  if(!response.ok) throw new Error('فشل الاتصال بالخادم');
+  const data = await response.json();
+  let text = (data.content || []).map(b=>b.text||'').join('').trim();
+  text = text.replace(/^```json\s*/i,'').replace(/```$/,'').trim();
+  const parsed = JSON.parse(text);
+  if(!parsed.concepts || !parsed.concepts.length) throw new Error('لم يتم استخراج معلومات كافية');
+  return parsed;
+}
+
+/* ============================================================
+   خريطة الدرس (المسار)
+   ============================================================ */
+function beginLesson(){
+  showScreen('map');
+  renderMap();
+}
+function renderMap(){
+  const lesson = db.lessons[currentLessonId];
+  document.getElementById('mapLessonName').textContent = lesson.name;
+  const total = lesson.concepts.length * 4;
+  const done = lesson.concepts.reduce((s,c)=>s+c.masteredTypes.length,0);
+  document.getElementById('mapProgressFill').style.width = Math.round(done/total*100)+'%';
+  document.getElementById('mapProgressText').textContent = `${done} من ${total} مكتمل`;
+
+  const wrap = document.getElementById('pathWrap');
+  wrap.innerHTML = '<div class="bead-line"></div>';
+  lesson.concepts.forEach((c,i)=>{
+    const masteryCount = c.masteredTypes.length;
+    let cls = 'locked';
+    if(masteryCount>=4) cls='mastered';
+    else if(i===0 || lesson.concepts[i-1].masteredTypes.length>=4 || masteryCount>0) cls='available';
+    const node = document.createElement('div');
+    node.className = 'path-node '+cls;
+    node.dataset.i = i+1;
+    node.textContent = cls==='mastered' ? '⭐' : (cls==='available' ? '📘' : '🔒');
+    if(cls!=='locked') node.onclick = ()=>startConceptQuiz(i);
+    wrap.appendChild(node);
+  });
+}
+
+/* ============================================================
+   محرك الأسئلة (Quiz)
+   ============================================================ */
+let quizState = null; // {queue:[{conceptIdx, qIdx}], pos, hearts, mode}
+
+function buildQueueForLesson(lesson, onlyUnmastered){
+  // بناء طابور متشابك: لا تكرار متتالٍ لنفس المعلومة
+  const rounds = [[],[],[],[]];
+  lesson.concepts.forEach((c, ci)=>{
+    for(let qi=0; qi<4; qi++){
+      if(c.masteredTypes.includes(qi)) continue;
+      if(onlyUnmastered && c.masteredTypes.includes(qi)) continue;
+      rounds[qi].push({conceptIdx:ci, qIdx:qi});
+    }
+  });
+  let queue = [];
+  rounds.forEach(r=>{
+    shuffle(r);
+    queue = queue.concat(r);
+  });
+  return queue;
+}
+function shuffle(arr){ for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]];} return arr; }
+
+function startConceptQuiz(fromIdx){
+  const lesson = db.lessons[currentLessonId];
+  let queue = buildQueueForLesson(lesson, false);
+  if(!queue.length){ showScreen('map'); return; }
+  quizState = {lesson, queue, pos:0, hearts:5, correctInSession:0, wrongInSession:0, requeued:[]};
+  showScreen('quiz');
+  renderHearts();
+  renderQuestion();
+}
+
+function exitQuiz(){
+  saveDB();
+  showScreen('map');
+}
+
+function renderHearts(){
+  const h = document.getElementById('heartsDisplay');
+  h.innerHTML = '';
+  for(let i=0;i<5;i++){
+    h.innerHTML += i < quizState.hearts ? '❤️' : '🩶';
+  }
+}
+
+function currentQ(){
+  const item = quizState.queue[quizState.pos];
+  const concept = quizState.lesson.concepts[item.conceptIdx];
+  return {item, concept, q: concept.questions[item.qIdx]};
+}
+
+function renderQuestion(){
+  if(quizState.pos >= quizState.queue.length){
+    finishQuiz();
+    return;
+  }
+  const total = quizState.queue.length;
+  document.getElementById('quizProgressFill').style.width = Math.round(quizState.pos/total*100)+'%';
+  const {q} = currentQ();
+  const area = document.getElementById('quizArea');
+  const typeLabel = {mcq:'اختيار من متعدد', fill:'أكمل الفراغ', truefalse:'صح أم خطأ', flashcard:'بطاقة تعليمية'}[q.type];
+
+  let inner = `<div class="q-card"><div class="q-type">${typeLabel}</div>`;
+  if(q.type==='mcq'){
+    inner += `<div class="q-text">${escapeHtml(q.question)}</div><div class="opt-list">`;
+    q.options.forEach((opt,i)=>{
+      inner += `<div class="opt" onclick="answerMCQ(${i})" data-i="${i}">${escapeHtml(opt)}</div>`;
+    });
+    inner += `</div>`;
+  } else if(q.type==='fill'){
+    inner += `<div class="q-text">${escapeHtml(q.question)}</div>
+      <input type="text" class="fill-input" id="fillAnswer" placeholder="اكتب إجابتك هنا">
+      <button class="btn btn-primary" style="margin-top:14px;" onclick="answerFill()">تحقق</button>`;
+  } else if(q.type==='truefalse'){
+    inner += `<div class="q-text">${escapeHtml(q.statement)}</div>
+      <div class="tf-row">
+        <div class="tf-btn" onclick="answerTF(true)">✅ صحيح</div>
+        <div class="tf-btn" onclick="answerTF(false)">❌ خطأ</div>
+      </div>`;
+  } else if(q.type==='flashcard'){
+    inner += `<div class="flip-card" id="flipCard" onclick="flipCard()">
+        <div class="flip-inner" id="flipInner">
+          <div class="flip-face flip-front">${escapeHtml(q.front)}</div>
+          <div class="flip-face flip-back">${escapeHtml(q.back)}</div>
+        </div>
+      </div>
+      <div class="hint">اضغط على البطاقة لرؤية الإجابة</div>
+      <div id="flashcardActions" style="display:none; gap:10px; margin-top:14px;">
+        <button class="btn btn-outline" style="margin-bottom:8px;" onclick="answerFlash(false)">لم أكن أعرفها</button>
+        <button class="btn btn-primary" onclick="answerFlash(true)">كنت أعرفها ✓</button>
+      </div>`;
+  }
+  inner += `</div>`;
+  area.innerHTML = inner;
+}
+
+function flipCard(){
+  document.getElementById('flipCard').classList.toggle('flipped');
+  document.getElementById('flashcardActions').style.display = 'flex';
+  document.getElementById('flashcardActions').style.flexDirection='column';
+}
+
+function answerMCQ(i){
+  const {q} = currentQ();
+  const correct = i === q.correctIndex;
+  document.querySelectorAll('.opt').forEach(o=>o.classList.add('disabled'));
+  document.querySelector(`.opt[data-i="${q.correctIndex}"]`).classList.add('correct');
+  if(!correct) document.querySelector(`.opt[data-i="${i}"]`).classList.add('wrong');
+  handleResult(correct, q.explanation);
+}
+function answerFill(){
+  const {q} = currentQ();
+  const val = (document.getElementById('fillAnswer').value||'').trim();
+  const correct = normalizeAr(val) === normalizeAr(q.answer);
+  handleResult(correct, q.explanation + (correct?'' : ` (الإجابة الصحيحة: ${q.answer})`));
+}
+function answerTF(val){
+  const {q} = currentQ();
+  const correct = val === q.answer;
+  document.querySelectorAll('.tf-btn').forEach(b=>b.style.pointerEvents='none');
+  handleResult(correct, q.explanation);
+}
+function answerFlash(knewIt){
+  const {q} = currentQ();
+  handleResult(knewIt, q.explanation);
+}
+function normalizeAr(s){
+  return (s||'').toString().trim().replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/\s+/g,' ').toLowerCase();
+}
+
+function handleResult(correct, explanation){
+  const {item, concept} = currentQ();
+  if(correct){
+    quizState.correctInSession++;
+    db.totalCorrect++;
+    db.xp += 10;
+    if(!concept.masteredTypes.includes(item.qIdx)){
+      concept.masteredTypes.push(item.qIdx);
+      if(concept.masteredTypes.length === 4){ db.xp += 20; }
+    }
+  } else {
+    quizState.wrongInSession++;
+    db.totalWrong++;
+    concept.wrongCount = (concept.wrongCount||0)+1;
+    quizState.hearts = Math.max(0, quizState.hearts-1);
+    // أعد هذا السؤال لاحقًا في نفس الجلسة (ليس فورًا)
+    const insertAt = Math.min(quizState.queue.length, quizState.pos + 3 + Math.floor(Math.random()*3));
+    quizState.queue.splice(insertAt, 0, item);
+  }
+  saveDB();
+  renderHearts();
+  document.getElementById('stat-xp') && (document.getElementById('stat-xp').textContent = db.xp);
+
+  const bar = document.getElementById('feedbackBar');
+  bar.className = 'feedback-bar show ' + (correct?'correct':'wrong');
+  document.getElementById('feedbackTitle').textContent = correct ? 'إجابة رائعة! 🎉' : 'ليس تمامًا، لنراجع هذه المعلومة مرة أخرى.';
+  document.getElementById('feedbackExplain').textContent = explanation || '';
+
+  if(correct && quizState.hearts>0 && quizState.pos < quizState.queue.length-1){
+    spawnConfettiSmall();
+  }
+  if(quizState.hearts === 0 && !quizState.heartsWarned){
+    quizState.heartsWarned = true;
+    setTimeout(()=>{
+      document.getElementById('feedbackExplain').textContent += ' — يمكنك متابعة التعلم في وضع المراجعة.';
+    }, 100);
+  }
+}
+
+function nextQuestion(){
+  document.getElementById('feedbackBar').classList.remove('show');
+  quizState.pos++;
+  renderQuestion();
+}
+
+function finishQuiz(){
+  saveDB();
+  const lesson = quizState.lesson;
+  const totalQ = lesson.concepts.length*4;
+  const doneQ = lesson.concepts.reduce((s,c)=>s+c.masteredTypes.length,0);
+  if(doneQ >= totalQ && !lesson.completedOnce){
+    lesson.completedOnce = true;
+    db.xp += 50;
+    saveDB();
+    spawnConfettiBurst();
+  }
+  bumpStreak();
+  showScreen('map');
+  renderMap();
+}
+
+/* Confetti */
+function spawnConfettiSmall(){ spawnConfetti(10); }
+function spawnConfettiBurst(){ spawnConfetti(50); }
+function spawnConfetti(n){
+  const colors=['#D4A544','#0E7C66','#E85D4E','#14A085','#F0D48A'];
+  for(let i=0;i<n;i++){
+    const el = document.createElement('div');
+    el.className='confetti-piece';
+    el.style.left = Math.random()*100+'vw';
+    el.style.background = colors[Math.floor(Math.random()*colors.length)];
+    el.style.animationDuration = (2+Math.random()*1.5)+'s';
+    el.style.opacity = 1;
+    document.body.appendChild(el);
+    setTimeout(()=>el.remove(), 3800);
+  }
+}
+
+/* ============================================================
+   المراجعة
+   ============================================================ */
+function openReview(){ showScreen('review'); renderReview(); }
+function renderReview(){
+  const items = [];
+  Object.values(db.lessons).forEach(lesson=>{
+    lesson.concepts.forEach((c,ci)=>{
+      const masteryLevel = c.masteredTypes.length;
+      if(masteryLevel < 4){
+        items.push({lessonId:lesson.id, lessonName:lesson.name, conceptIdx:ci, concept:c});
+      }
+    });
+  });
+  const list = document.getElementById('reviewList');
+  const btn = document.getElementById('startReviewBtn');
+  if(!items.length){
+    list.innerHTML = '<div class="empty"><span class="em">✅</span>لا توجد معلومات بحاجة للمراجعة الآن. أحسنت!</div>';
+    btn.style.display='none';
+    return;
+  }
+  btn.style.display='block';
+  let html = '<div class="card">';
+  items.slice(0,30).forEach(it=>{
+    const lvl = it.concept.masteredTypes.length;
+    const dot = lvl===0?'mastery-red':(lvl<4?'mastery-orange':'mastery-green');
+    html += `<div class="review-item">
+      <div class="txt">${escapeHtml(it.concept.concept)}<div class="small-tag">${escapeHtml(it.lessonName)}</div></div>
+      <span class="mastery-dot ${dot}"></span>
+    </div>`;
+  });
+  html += '</div>';
+  list.innerHTML = html;
+}
+function startReviewSession(){
+  // اجمع من كل الدروس أسئلة غير متقنة، أولوية للأكثر خطأً
+  let pool = [];
+  Object.values(db.lessons).forEach(lesson=>{
+    lesson.concepts.forEach((c, ci)=>{
+      for(let qi=0; qi<4; qi++){
+        if(!c.masteredTypes.includes(qi)){
+          pool.push({conceptIdx:ci, qIdx:qi, _lesson:lesson, _wrongCount:c.wrongCount||0});
+        }
+      }
+    });
+  });
+  if(!pool.length) return;
+  pool.sort((a,b)=> b._wrongCount - a._wrongCount);
+  // اجعلها متشابكة (لا تكرار متتالٍ لنفس concept)
+  shuffle(pool);
+  // استخدم أول درس تحتوي أول عنصر كـ lesson مرجعي لكل عنصر مستقل
+  quizState = {
+    lesson: null, isReview:true,
+    queue: pool.map(p=>({conceptIdx:p.conceptIdx, qIdx:p.qIdx, _lessonRef:p._lesson})),
+    pos:0, hearts:5, correctInSession:0, wrongInSession:0
+  };
+  showScreen('quiz');
+  renderHearts();
+  renderReviewQuestion();
+}
+// نسخة معدّلة من renderQuestion/currentQ للمراجعة متعددة الدروس
+const _origCurrentQ = currentQ;
+function renderReviewQuestion(){
+  if(quizState.pos >= quizState.queue.length){
+    db.xp += 30; saveDB(); bumpStreak();
+    showScreen('review'); renderReview();
+    spawnConfettiSmall();
+    return;
+  }
+  currentQ = function(){
+    const item = quizState.queue[quizState.pos];
+    const lesson = item._lessonRef;
+    const concept = lesson.concepts[item.conceptIdx];
+    return {item, concept, q: concept.questions[item.qIdx]};
+  };
+  document.getElementById('quizProgressFill').style.width = Math.round(quizState.pos/quizState.queue.length*100)+'%';
+  renderQuestion();
+}
+// override nextQuestion/finishQuiz behavior when in review mode
+const _origNext = nextQuestion;
+nextQuestion = function(){
+  document.getElementById('feedbackBar').classList.remove('show');
+  quizState.pos++;
+  if(quizState.isReview){ renderReviewQuestion(); currentQ = _origCurrentQ; }
+  else renderQuestion();
+};
+
+/* ============================================================
+   الإحصائيات
+   ============================================================ */
+function openStats(){ showScreen('stats'); renderStats(); }
+function renderStats(){
+  document.getElementById('s2-xp').textContent = db.xp;
+  document.getElementById('s2-streak').textContent = db.streak;
+  document.getElementById('s2-correct').textContent = db.totalCorrect;
+  document.getElementById('s2-wrong').textContent = db.totalWrong;
+
+  const per = document.getElementById('statsPerLesson');
+  const lessons = Object.values(db.lessons);
+  if(!lessons.length){
+    per.innerHTML = '<div class="empty">لا توجد دروس بعد</div>';
+  } else {
+    per.innerHTML = lessons.map(l=>{
+      const total = l.concepts.length*4;
+      const done = l.concepts.reduce((s,c)=>s+c.masteredTypes.length,0);
+      const pct = Math.round(done/total*100);
+      return `<div style="margin-bottom:12px;">
+        <div style="display:flex; justify-content:space-between; font-size:.85rem; margin-bottom:5px;">
+          <span>${escapeHtml(l.name)}</span><span>${pct}%</span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" style="width:${pct}%;"></div></div>
+      </div>`;
+    }).join('');
+  }
+  const levels = ['مبتدئ','متعلم','مجتهد','متقدم','خبير'];
+  const lvlIdx = Math.min(4, Math.floor(db.xp/300));
+  document.getElementById('levelDisplay').textContent = `المستوى ${lvlIdx+1}: ${levels[lvlIdx]} (${db.xp} XP)`;
+}
+
+/* ============================================================
+   الصفحة الرئيسية
+   ============================================================ */
+function renderHome(){
+  document.getElementById('stat-xp').textContent = db.xp;
+  document.getElementById('stat-streak').textContent = db.streak;
+  const completedCount = Object.values(db.lessons).filter(l=>l.completedOnce).length;
+  document.getElementById('stat-lessons').textContent = completedCount;
+
+  let totalQ=0, doneQ=0;
+  Object.values(db.lessons).forEach(l=>{ totalQ += l.concepts.length*4; doneQ += l.concepts.reduce((s,c)=>s+c.masteredTypes.length,0); });
+  document.getElementById('stat-mastery').textContent = totalQ? Math.round(doneQ/totalQ*100)+'%' : '0%';
+
+  const list = document.getElementById('continue-list');
+  const lessons = Object.values(db.lessons).sort((a,b)=>b.createdAt-a.createdAt);
+  if(!lessons.length){
+    list.innerHTML = `<div class="empty"><span class="em">📚</span>لم تبدأ أي درس بعد. ارفع درسك الأول للبدء!</div>`;
+  } else {
+    list.innerHTML = lessons.map(l=>{
+      const total = l.concepts.length*4;
+      const done = l.concepts.reduce((s,c)=>s+c.masteredTypes.length,0);
+      const pct = Math.round(done/total*100);
+      const mastered = l.concepts.filter(c=>c.masteredTypes.length>=4).length;
+      return `<div class="card lesson-card" onclick="openLesson('${l.id}')">
+        <div class="badge">📘</div>
+        <div class="info">
+          <h3>${escapeHtml(l.name)}</h3>
+          <div class="progress-track"><div class="progress-fill" style="width:${pct}%;"></div></div>
+          <div class="meta">${l.concepts.length} معلومة · ${mastered} متقنة · ${pct}%</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  const reviewPrev = document.getElementById('home-review-preview');
+  let needReview = 0;
+  Object.values(db.lessons).forEach(l=> l.concepts.forEach(c=>{ if(c.masteredTypes.length<4) needReview++; }));
+  reviewPrev.innerHTML = needReview
+    ? `<div class="card" style="display:flex; align-items:center; justify-content:space-between; cursor:pointer;" onclick="openReview()">
+         <div>لديك <b>${needReview}</b> معلومة تحتاج مراجعة</div><div>←</div>
+       </div>`
+    : `<div class="empty"><span class="em">✅</span>لا شيء بحاجة لمراجعة الآن</div>`;
+}
+function openLesson(id){ currentLessonId = id; showScreen('map'); renderMap(); }
+
+/* ============================================================
+   عام
+   ============================================================ */
+function escapeHtml(s){
+  return (s===undefined||s===null) ? '' : s.toString()
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* الوضع الليلي */
+function applyTheme(){
+  const saved = localStorage.getItem('hafez_theme') || 'light';
+  document.documentElement.setAttribute('data-theme', saved);
+  document.getElementById('themeToggle').textContent = saved==='dark' ? '☀️' : '🌙';
+}
+document.getElementById('themeToggle').onclick = ()=>{
+  const cur = document.documentElement.getAttribute('data-theme')==='dark' ? 'light':'dark';
+  document.documentElement.setAttribute('data-theme', cur);
+  localStorage.setItem('hafez_theme', cur);
+  document.getElementById('themeToggle').textContent = cur==='dark' ? '☀️' : '🌙';
+};
+applyTheme();
+renderHome();
+</script>
+</body>
+</html>
